@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")      
+}
+
+model UserRecord {
+  id           Int      @id @default(autoincrement())
+  userId       String   @unique @map("user_id")
+  bailanCount  Int      @default(0) @map("bailan_count")
+  warningCount Int      @default(0) @map("warning_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("user_records")
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  chatId      String   @map("chat_id")
+  userId      String   @map("user_id")
+  messageText String   @map("message_text")
+  timestamp   DateTime @default(now())
+
+  @@map("messages")
+}
+
+model Vote {
+  id          Int      @id @default(autoincrement())
+  voteType    String   @map("vote_type")
+  targetUser  String   @map("target_user")
+  initiatorId String   @map("initiator_id")
+  chatId      String   @map("chat_id")
+  startTime   DateTime @default(now()) @map("start_time")
+  status      String   @default("active")
+
+  responses VoteResponse[]
+
+  @@map("votes")
+}
+
+model VoteResponse {
+  id        Int      @id @default(autoincrement())
+  voteId    Int      @map("vote_id")
+  voterId   String   @map("voter_id")
+  response  String
+  timestamp DateTime @default(now())
+
+  vote Vote @relation(fields: [voteId], references: [id])
+
+  @@map("vote_responses")
+}
