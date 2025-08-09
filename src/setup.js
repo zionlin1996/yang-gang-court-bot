@@ -8,7 +8,8 @@ async function setup({ app, bot }, options) {
     console.log(`Bot is listening for messages on localhost`);
   } else {
     const port = process.env.PORT || 3000;
-
+    // Health check endpoint
+    app.get('/', (req, res) => res.send('ok'));
     // Webhook endpoint for Render.com (only used in production)
     app.post('/webhook', (req, res) => {
       try {
