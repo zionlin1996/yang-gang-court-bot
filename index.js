@@ -29,7 +29,7 @@ bot.handleCommand("/records", async (msg) => {
 
       const displayName = nicknameOf(targetUsername);
       if (userRecord) {
-        const message = `${displayName} 的紀錄:\n${formatUserRecord(displayName, [userRecord])}`;
+        const message = `${displayName} 的紀錄: ${formatUserRecord(userRecord)}`;
         await bot.respond(msg, message);
       } else {
         await bot.respond(msg, `找不到用戶${displayName}的紀錄`);
@@ -39,11 +39,7 @@ bot.handleCommand("/records", async (msg) => {
       const allRecords = await db.getAllUserRecords();
       if (allRecords.length === 0) return bot.respond(msg, "目前沒有任何紀錄")
       
-      let message = "";
-      for (const record of allRecords) {
-        const displayName = nicknameOf(record.userId);
-        message += `${displayName} ${formatUserRecord(record.userId, [record])}\n`;
-      }
+      const message = allRecords.map(record => `${nicknameOf(record.userId)} ${formatUserRecord(record)}`).join('\n');
       await bot.respond(msg, message);
     }
   } catch (error) {

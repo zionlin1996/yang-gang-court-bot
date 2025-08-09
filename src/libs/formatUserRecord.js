@@ -1,6 +1,4 @@
-
-function formatUserRecord(userId, records) {
-  const user = records.find(r => r.userId === userId);
+function formatUserRecord(user) {
   if (!user) return "無紀錄";
   
   const bailanCount = user.bailanCount || 0;
