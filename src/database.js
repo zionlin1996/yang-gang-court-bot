@@ -18,7 +18,6 @@ class Database {
       // Test the connection
       await this.prisma.$connect();
       console.log('Prisma database connected');
-      return Promise.resolve();
     } catch (error) {
       console.error('Error connecting to database:', error.message);
       throw error;
@@ -266,4 +265,6 @@ class Database {
   }
 }
 
-module.exports = Database;
+const db = new Database();
+
+module.exports = db;

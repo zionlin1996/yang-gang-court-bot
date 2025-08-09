@@ -5,9 +5,17 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "setup:db": "node scripts/setup-db.js",
+    "dev:db:setup": "npm run dev:db:generate && npm run dev:db:push",
+    "dev:db:generate": "prisma generate --schema=prisma/schema.dev.prisma",
+    "dev:db:push": "prisma db push --schema=prisma/schema.dev.prisma",
+    "dev:db:studio": "prisma studio --schema=prisma/schema.dev.prisma",
+    "prod:db:setup": "npm run db:generate && npm run db:push",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:prod": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -26,6 +34,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "node-telegram-bot-api": "^0.64.0",
+    "pg": "^8.16.3",
     "prisma": "^6.13.0"
   },
   "devDependencies": {

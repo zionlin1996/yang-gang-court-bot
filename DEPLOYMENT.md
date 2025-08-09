@@ -26,8 +26,8 @@ This guide explains how to deploy the Yang Gang Court Bot to Render.com.
 - **Branch:** `main` (or your deployment branch)
 
 **Build & Deploy:**
-- **Build Command:** `./build.sh` (or `yarn install && npx prisma generate && npx prisma db push`)
-- **Start Command:** `yarn start`
+- **Build Command:** `npm install && npm run setup:db`
+- **Start Command:** `npm start`
 
 ### 3. Environment Variables
 
@@ -37,9 +37,49 @@ Set the following environment variables in Render.com:
 |----------|-------|-------|
 | `NODE_ENV` | `production` | Sets production mode |
 | `TELEGRAM_BOT_TOKEN` | `your_bot_token_here` | Get from @BotFather |
-| `DATABASE_URL` | `file:./data.db` | SQLite database path |
+| `DATABASE_PROVIDER` | `postgresql` | Database type for production |
+| `DATABASE_URL` | `your_postgresql_url_here` | PostgreSQL connection string |
 
-**Important:** Never commit your actual bot token to Git. Always use environment variables.
+**Important:** Never commit your actual bot token or database credentials to Git. Always use environment variables.
+
+#### Database Configuration
+
+This bot supports different databases for different environments:
+
+**Development (SQLite):**
+```env
+DATABASE_PROVIDER="sqlite"
+DATABASE_URL="file:./data.db"
+```
+
+**Production (PostgreSQL):**
+```env
+DATABASE_PROVIDER="postgresql"
+DATABASE_URL="postgresql://username:password@host:port/database_name"
+```
+
+For Render.com, you can use their managed PostgreSQL service or provide your own PostgreSQL URL.
+
+#### Database Setup Commands
+
+The project includes convenient scripts for database setup:
+
+```bash
+# Automatic setup based on NODE_ENV
+npm run setup:db
+
+# Development (SQLite) - explicit commands
+npm run dev:db:setup
+npm run dev:db:generate
+npm run dev:db:push
+npm run dev:db:studio
+
+# Production (PostgreSQL) - explicit commands  
+npm run prod:db:setup
+npm run db:generate
+npm run db:push
+npm run db:migrate:prod
+```
 
 ### 4. Health Check
 
@@ -79,7 +119,9 @@ The bot automatically configures the Telegram webhook when deployed to Render.co
 
 ## Database Persistence
 
-The SQLite database (`data.db`) will persist across deployments using Render.com's disk storage.
+**Development:** Uses SQLite database (`data.db`) stored locally.
+
+**Production:** Uses PostgreSQL database for better performance and reliability. Render.com offers managed PostgreSQL services or you can use external PostgreSQL providers.
 
 ## Monitoring
 
