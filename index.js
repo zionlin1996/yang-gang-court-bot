@@ -25,9 +25,9 @@ bot.handleCommand("/records", async (msg) => {
     if (targetUsername) {
       if (!NICKNAME_MAP[targetUsername]) return bot.respond(msg, "無此用戶");
 
+      const userRecord = await db.getUserRecord(targetUsername);
+
       const displayName = nicknameOf(targetUsername);
-      const userRecord = await db.getUserRecord(displayName);
-      
       if (userRecord) {
         const message = `${displayName} 的紀錄:\n${formatUserRecord(displayName, [userRecord])}`;
         await bot.respond(msg, message);
