@@ -22,16 +22,6 @@ model UserRecord {
   @@map("user_records")
 }
 
-model Message {
-  id          Int      @id @default(autoincrement())
-  chatId      String   @map("chat_id")
-  userId      String   @map("user_id")
-  messageText String   @map("message_text")
-  timestamp   DateTime @default(now())
-
-  @@map("messages")
-}
-
 model Vote {
   id          Int      @id @default(autoincrement())
   voteType    String   @map("vote_type")
@@ -41,19 +31,5 @@ model Vote {
   startTime   DateTime @default(now()) @map("start_time")
   status      String   @default("active")
 
-  responses VoteResponse[]
-
   @@map("votes")
-}
-
-model VoteResponse {
-  id        Int      @id @default(autoincrement())
-  voteId    Int      @map("vote_id")
-  voterId   String   @map("voter_id")
-  response  String
-  timestamp DateTime @default(now())
-
-  vote Vote @relation(fields: [voteId], references: [id])
-
-  @@map("vote_responses")
 }

@@ -109,7 +109,7 @@ class VoteManager {
     const rejectCount = currentVote.getRejectCount();
     
     const displayName = nicknameOf(currentVote.targetUser);
-    const message = `投票更新: ${displayName} 是否${currentVote.type === 'bailan' ? '白爛' : '醜一'}？ 同意 ${agreeCount} / 反對 ${rejectCount}`;
+    const message = `投票更新: ${displayName} 484 ${currentVote.type === 'bailan' ? '白爛' : '醜一'}？ 同意 ${agreeCount} / 反對 ${rejectCount}`;
     await this.bot.respond(msg, message);
     
     // Check if vote should pass or fail
@@ -135,15 +135,15 @@ class VoteManager {
     const currentRecord = await this.db.getUserRecord(currentVote.targetUser);
     await this.db.saveUserRecord(currentVote.targetUser, currentVote.type);
     
-    let message = `投票通過: ${displayName}`;
+    let message = `投票結束: ${displayName}`;
     if (currentVote.type === 'bailan') {
-      message += " 記白爛一次";
+      message += "白爛 +1";
     } else if (currentVote.type === 'warning') {
       // Check if user already had one warning (which would make this the second)
       if (currentRecord && currentRecord.warning_count === 1) {
-        message += " 醜二，轉為白爛 +1)";
+        message += "醜二，白爛 +1";
       } else {
-        message += " 醜一";
+        message += "醜一";
       }
     }
     
@@ -158,7 +158,7 @@ class VoteManager {
     const chatId = currentVote.chatId;
     const displayName = nicknameOf(currentVote.targetUser);
     
-    const message = `${displayName} ${currentVote.type === 'bailan' ? '白爛' : '醜一'} 投票失敗`;
+    const message = `投票結束： ${displayName}不算${currentVote.type === 'bailan' ? '白爛' : '醜一'}`;
     await this.bot.sendMessage(chatId, message);
     this.delete();
   }
@@ -174,7 +174,7 @@ class VoteManager {
         await this.bot.respond(msg, "投票時間超過8小時，自動失效");
         this.delete();
       } else {
-        return this.bot.respond(msg, "目前已有進行中的投票，請等待投票結束");
+        return this.bot.respond(msg, "已有進行中的投票");
       }
     }
     
@@ -195,7 +195,7 @@ class VoteManager {
     // Send confirmation message
     const displayName = nicknameOf(target);
     const voteTypeText = voteType === 'bailan' ? '白爛' : '醜一';
-    const message = `開始投票: ${displayName} 是否${voteTypeText}？`;
+    const message = `開始投票: ${displayName} 484 ${voteTypeText}？`;
     
     await this.bot.respond(msg, message, { deleteCommand: deleteAfter });
   }
@@ -242,7 +242,7 @@ class VoteManager {
     const hoursLeft = currentVote.getTimeRemaining();
     
     let voteType = currentVote.type === 'bailan' ? '白爛' : '醜一';
-    const message = `目前投票狀態:\n${displayName} 是否${voteType}？ 同意 ${agreeCount} / 反對 ${rejectCount} \n剩餘時間: ${hoursLeft.toFixed(1)} 小時`;
+    const message = `${displayName} 484 ${voteType}？ 同意 ${agreeCount} / 反對 ${rejectCount} \n剩餘時間: ${hoursLeft.toFixed(1)} 小時`;
     
     await this.bot.respond(msg, message);
   }

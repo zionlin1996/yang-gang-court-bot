@@ -114,38 +114,6 @@ class Database {
   }
 
   /**
-   * Save message
-   */
-  async saveMessage(chatId, userId, messageText) {
-    try {
-      await this.prisma.message.create({
-        data: {
-          chatId,
-          userId,
-          messageText,
-        },
-      });
-    } catch (error) {
-      console.error('Error saving message:', error);
-    }
-  }
-
-  /**
-   * Get message count for user
-   */
-  async getUserMessageCount(userId) {
-    try {
-      const count = await this.prisma.message.count({
-        where: { userId },
-      });
-      return count;
-    } catch (error) {
-      console.error('Error getting user message count:', error);
-      return 0;
-    }
-  }
-
-  /**
    * Save vote
    */
   async saveVote(voteType, targetUser, initiatorId, chatId) {
@@ -162,41 +130,6 @@ class Database {
     } catch (error) {
       console.error('Error saving vote:', error);
       throw error;
-    }
-  }
-
-  /**
-   * Save vote response
-   */
-  async saveVoteResponse(voteId, voterId, response) {
-    try {
-      await this.prisma.voteResponse.create({
-        data: {
-          voteId,
-          voterId,
-          response,
-        },
-      });
-    } catch (error) {
-      console.error('Error saving vote response:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get vote responses
-   */
-  async getVoteResponses(voteId) {
-    try {
-      return await this.prisma.voteResponse.findMany({
-        where: { voteId },
-        include: {
-          vote: true,
-        },
-      });
-    } catch (error) {
-      console.error('Error getting vote responses:', error);
-      return [];
     }
   }
 

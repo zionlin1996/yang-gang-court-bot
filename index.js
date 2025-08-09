@@ -4,7 +4,7 @@ const db = require('./src/database');
 const express = require('express');
 const { NICKNAME_MAP, HELP_MESSAGE, RULES_MESSAGE } = require('./constants');
 const nicknameOf = require('./src/libs/nicknameOf');
-const formatUserBailanRecord = require('./src/libs/formatUserBailanRecord');
+const formatUserRecord = require('./src/libs/formatUserRecord');
 const parseMessage = require('./src/libs/parseMessage');
 const voteManager = require('./src/votes');
 
@@ -29,7 +29,7 @@ bot.handleCommand("/records", async (msg) => {
       const userRecord = await db.getUserRecord(displayName);
       
       if (userRecord) {
-        const message = `${displayName} 的紀錄:\n${formatUserBailanRecord(displayName, [userRecord])}`;
+        const message = `${displayName} 的紀錄:\n${formatUserRecord(displayName, [userRecord])}`;
         await bot.respond(msg, message);
       } else {
         await bot.respond(msg, `找不到用戶${displayName}的紀錄`);
@@ -42,7 +42,7 @@ bot.handleCommand("/records", async (msg) => {
       let message = "";
       for (const record of allRecords) {
         const displayName = nicknameOf(record.userId);
-        message += `${displayName} ${formatUserBailanRecord(record.userId, [record])}\n`;
+        message += `${displayName} ${formatUserRecord(record.userId, [record])}\n`;
       }
       await bot.respond(msg, message);
     }

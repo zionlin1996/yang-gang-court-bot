@@ -1,5 +1,5 @@
 
-function formatUserBailanRecord(userId, records) {
+function formatUserRecord(userId, records) {
   const user = records.find(r => r.userId === userId);
   if (!user) return "無紀錄";
   
@@ -9,4 +9,4 @@ function formatUserBailanRecord(userId, records) {
   return bailanCount.toString() + (warningCount > 0 ? ` + 醜一` : '');
 }
 
-module.exports = formatUserBailanRecord;
+module.exports = formatUserRecord;
