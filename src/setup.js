@@ -10,7 +10,7 @@ async function setup({ app, bot }, options) {
     const port = process.env.PORT || 3000;
     // Health check endpoint
     app.get('/', (req, res) => res.send('ok'));
-    // Webhook endpoint for Render.com (only used in production)
+    // Webhook endpoint (used in production)  
     app.post('/webhook', (req, res) => {
       try {
         console.log('Received webhook update:', JSON.stringify(req.body, null, 2));
@@ -22,18 +22,17 @@ async function setup({ app, bot }, options) {
       }
     });
 
-    // Set webhook for render.com (production only)
-    // render.com provides the service URL via RENDER_EXTERNAL_URL
-    const renderUrl = process.env.RENDER_EXTERNAL_URL;
-    if (renderUrl) {
-      const webhookUrl = `${renderUrl}/webhook`;
+    // Set webhook using EXTERNAL_URL (provided by CapRover or hosting env)
+    const externalUrl = process.env.EXTERNAL_URL;
+    if (externalUrl) {
+      const webhookUrl = `${externalUrl}/webhook`;
       bot.setWebHook(webhookUrl).then(() => {
         console.log(`Webhook set to: ${webhookUrl}`);
       }).catch((error) => {
         console.error('Failed to set webhook:', error);
       });
     } else {
-      console.warn('RENDER_EXTERNAL_URL not found. Webhook not set. Bot will not receive updates in production.');
+      console.warn('EXTERNAL_URL not found. Webhook not set. Bot will not receive updates in production.');
     }
 
     // In production mode, start the server and set webhook

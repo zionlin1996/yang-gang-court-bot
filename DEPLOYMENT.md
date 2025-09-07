@@ -1,48 +1,78 @@
-# Deployment to Render.com
+## Deployment to CapRover
 
-This guide explains how to deploy the Yang Gang Court Bot to Render.com.
+This guide explains how to deploy the Yang Gang Court Bot to CapRover.
 
 ## Prerequisites
 
-1. A Render.com account
-2. Your Telegram bot token
-3. Your code pushed to a Git repository (GitHub, GitLab, etc.)
+1. A running CapRover server with a public domain and valid SSL
+2. `caprover` CLI installed and logged in to your server
+3. Your Telegram bot token from @BotFather
+4. PostgreSQL database URL for production
 
 ## Deployment Steps
 
-### 1. Create a New Web Service
+### 1. Create a New App on CapRover
 
-1. Go to [Render.com Dashboard](https://dashboard.render.com/)
-2. Click "New" → "Web Service"
-3. Connect your Git repository
-4. Select the repository containing this bot code
+1. Open your CapRover dashboard
+2. Click "Apps" → "Create New App"
+3. Enter an app name (e.g., `yang-gang-court-bot`) and create
 
-### 2. Configure the Service
+### 2. Set Environment Variables
 
-**Basic Settings:**
-- **Name:** `yang-gang-court-bot` (or your preferred name)
-- **Environment:** `Node`
-- **Region:** Choose the closest to your users
-- **Branch:** `main` (or your deployment branch)
+In the app settings → Environment Variables, add:
 
-**Build & Deploy:**
-- **Build Command:** `npm install && npm run setup:db`
-- **Start Command:** `npm start`
+| Variable | Example | Notes |
+|----------|---------|-------|
+| `NODE_ENV` | `production` | Required |
+| `TELEGRAM_BOT_TOKEN` | `123456:ABC...` | From @BotFather |
+| `DATABASE_PROVIDER` | `postgresql` | Use `sqlite` only for dev |
+| `DATABASE_URL` | `postgresql://user:pass@host:5432/db` | Prisma connection string |
+| `EXTERNAL_URL` | `https://your-app.your-domain.com` | Public HTTPS URL of your app |
 
-### 3. Environment Variables
+Important: Ensure `EXTERNAL_URL` matches the public domain you assign to the app.
 
-Set the following environment variables in Render.com:
+### 3. Deploy the App
 
-| Variable | Value | Notes |
-|----------|-------|-------|
-| `NODE_ENV` | `production` | Sets production mode |
-| `TELEGRAM_BOT_TOKEN` | `your_bot_token_here` | Get from @BotFather |
-| `DATABASE_PROVIDER` | `postgresql` | Database type for production |
-| `DATABASE_URL` | `your_postgresql_url_here` | PostgreSQL connection string |
+Option A — Deploy from GitHub with CapRover build:
 
-**Important:** Never commit your actual bot token or database credentials to Git. Always use environment variables.
+1. In CapRover → App → Deployment Methods → "Deploy from a public Git repo"
+2. Provide the repository URL and branch
+3. CapRover will build using the `Dockerfile`
 
-#### Database Configuration
+Option B — Local deploy with CapRover CLI:
+
+```bash
+caprover deploy --appName yang-gang-court-bot --tarFile ./
+```
+
+The included `Dockerfile` will:
+- Install dependencies
+- Copy the source code
+- Run `npm run setup:db` during build
+- Start the server on port 80
+
+### 4. Set App HTTP Settings
+
+1. In CapRover → App → HTTP Settings
+2. Enable HTTPS
+3. Assign a domain (e.g., `your-app.your-domain.com`)
+4. Force HTTPS (recommended)
+
+### 5. Webhook Configuration
+
+In production, the bot uses webhooks. `src/setup.js` reads `EXTERNAL_URL` and sets:
+
+```
+${EXTERNAL_URL}/webhook
+```
+
+Ensure `EXTERNAL_URL` is set to your public HTTPS URL and the app is reachable; the bot will log "Webhook set to:" on startup.
+
+### 6. Health Check
+
+- Health endpoint: `/` returns `ok` (CapRover uses container health, but you can add an HTTP check if desired)
+
+## Database Configuration
 
 This bot supports different databases for different environments:
 
@@ -58,105 +88,28 @@ DATABASE_PROVIDER="postgresql"
 DATABASE_URL="postgresql://username:password@host:port/database_name"
 ```
 
-For Render.com, you can use their managed PostgreSQL service or provide your own PostgreSQL URL.
-
-#### Database Setup Commands
-
-The project includes convenient scripts for database setup:
+Database setup commands are automated via:
 
 ```bash
-# Automatic setup based on NODE_ENV
 npm run setup:db
-
-# Development (SQLite) - explicit commands
-npm run dev:db:setup
-npm run dev:db:generate
-npm run dev:db:push
-npm run dev:db:studio
-
-# Production (PostgreSQL) - explicit commands  
-npm run prod:db:setup
-npm run db:generate
-npm run db:push
-npm run db:migrate:prod
 ```
 
-### 4. Health Check
+During production builds, migrations are applied if available, falling back to `db push`.
 
-Render.com will automatically use the `/health` endpoint to monitor your service.
+## Monitoring & Logs
 
-### 5. Custom Domain (Optional)
-
-After deployment, you can add a custom domain in the service settings.
-
-## File Structure for Render.com
-
-The following files are specifically configured for Render.com:
-
-- `render.yaml` - Render.com service configuration
-- `build.sh` - Custom build script
-- `src/server.js` - Updated for Render.com webhooks
-
-## Environment Variables Explained
-
-### `RENDER_EXTERNAL_URL`
-- Automatically provided by Render.com
-- Used to set the Telegram webhook URL
-- Format: `https://your-service-name.onrender.com`
-
-### `PORT`
-- Automatically provided by Render.com
-- Default: 10000
-- Your app must listen on this port
-
-## Webhook Configuration
-
-The bot automatically configures the Telegram webhook when deployed to Render.com:
-
-1. Render.com provides `RENDER_EXTERNAL_URL`
-2. The bot sets webhook to: `${RENDER_EXTERNAL_URL}/webhook`
-3. Telegram sends updates to this endpoint
-
-## Database Persistence
-
-**Development:** Uses SQLite database (`data.db`) stored locally.
-
-**Production:** Uses PostgreSQL database for better performance and reliability. Render.com offers managed PostgreSQL services or you can use external PostgreSQL providers.
-
-## Monitoring
-
-- **Health Check:** `https://your-service.onrender.com/health`
-- **Service Status:** `https://your-service.onrender.com/`
-- **Logs:** Available in Render.com dashboard
+- View logs in CapRover → App → Logs
+- Check for: "Bot server running on port ..." and "Webhook set to: ..."
 
 ## Troubleshooting
 
-### Bot Not Responding
-1. Check Render.com logs for errors
-2. Verify `TELEGRAM_BOT_TOKEN` is set correctly
-3. Ensure webhook is set: check logs for "Webhook set to:" message
-
-### Database Issues
-1. Check if `DATABASE_URL` environment variable is correct
-2. Verify build process completed successfully
-3. Check logs for Prisma-related errors
-
-### Webhook Issues
-1. Verify `RENDER_EXTERNAL_URL` is available in logs
-2. Check if webhook endpoint returns 200 status
-3. Test health check endpoint
+- Bot not responding: verify `EXTERNAL_URL` and `TELEGRAM_BOT_TOKEN`
+- Webhook not set: confirm the app is reachable over HTTPS and env var is correct
+- Database issues: check `DATABASE_URL` and build logs for Prisma output
 
 ## Development vs Production
 
-- **Development:** Uses polling (no webhook needed)
-- **Production:** Uses webhooks for better performance
+- Development uses polling (no webhook)
+- Production uses webhooks configured via `EXTERNAL_URL`
 
-The `NODE_ENV` environment variable controls this behavior.
-
-## Support
-
-If you encounter issues:
-1. Check Render.com service logs
-2. Verify all environment variables are set
-3. Test the health check endpoint
-4. Review the webhook configuration in logs
+`NODE_ENV` controls this behavior.

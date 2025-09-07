@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const { execSync } = require('child_process');
-const path = require('path');
 
 const env = process.env.NODE_ENV || 'development';
 
@@ -26,6 +25,7 @@ try {
     }
     console.log('✅ Production database setup complete!');
   }
+  process.exit(0);
 } catch (error) {
   console.error('❌ Database setup failed:', error.message);
   process.exit(1);
