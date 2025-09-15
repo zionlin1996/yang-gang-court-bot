@@ -6,7 +6,15 @@ class EnhancedBot extends TelegramBot {
   handleMessage = () => {};
   
   constructor(token, options) {
-    super(token, { polling: options.mode !== 'production' });
+    super(token, {
+      polling: options.mode !== 'production',
+      request: {
+        agentOptions: {
+          keepAlive: true,
+          family: 4
+        }
+      } 
+    });
     if (!token) {
       throw new Error('Telegram bot token is required');
     }
