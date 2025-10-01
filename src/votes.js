@@ -2,9 +2,37 @@ const nicknameOf = require('./libs/nicknameOf');
 const { NICKNAME_MAP } = require('../constants');
 const parseMessage = require('./libs/parseMessage');
 
+// Vote type display names
+const VOTE_TYPE_TEXT = {
+  bailan: '白爛',
+  warning: '醜一',
+};
+
+const getVoteTopic = (voteType, displayName) => 
+   voteType === "pardon" ? `是否赦免${displayName}` : `${displayName} 484 ${VOTE_TYPE_TEXT[voteType]}`;
+
+const getVotePassMessage = (voteType, displayName, record) => {
+  if (voteType === 'bailan') {
+    return `${displayName} 白爛 +1`;
+  } else if (voteType === 'warning') {
+    // Check if user already had one warning (which would make this the second)
+    if (record && record.warning_count === 1) {
+      return `${displayName} 醜二，白爛 +1`;
+    } else {
+      return `${displayName} 醜一`;
+    }
+  } else if (voteType === 'pardon') {
+    return `赦免 ${displayName}，白爛 -1`;
+  }
+}
+
+const getVoteFailMessage = (voteType, displayName) => {
+  return voteType === 'pardon' ? `赦免${displayName}失敗` : `${displayName}不算${VOTE_TYPE_TEXT[voteType]}`;
+}
+
 class Vote {
   constructor(type, targetUser, initiator) {
-    this.type = type; // 'bailan' or 'warning'
+    this.type = type; // 'bailan', 'warning', or 'pardon'
     this.targetUser = targetUser;
     this.initiator = initiator;
     this.votes = new Map();
@@ -12,11 +40,11 @@ class Vote {
     this.id = Date.now();
   }
 
-  vote(userId, voteType) {
+  vote(userId, agree) {
     if (this.isExpired()) {
       throw new Error('Vote has expired');
     }
-    this.votes.set(userId, voteType);
+    this.votes.set(userId, agree);
   }
 
   getAgreeCount() {
@@ -95,7 +123,7 @@ class VoteManager {
     this.db = db;
   }
   // Helper function to handle vote responses (agree/reject)
-  async handleVote(msg, voteType) {
+  async handleVote(msg, agree) {
     const valid = await this.checkValid(msg);
     if (!valid) return;
     
@@ -103,13 +131,13 @@ class VoteManager {
     const { initiator } = parseMessage(msg);
     
     // Add vote based on type
-    currentVote.vote(initiator.id, voteType);
+    currentVote.vote(initiator.id, agree);
     
     const agreeCount = currentVote.getAgreeCount();
     const rejectCount = currentVote.getRejectCount();
     
     const displayName = nicknameOf(currentVote.targetUser);
-    const message = `投票更新: ${displayName} 484 ${currentVote.type === 'bailan' ? '白爛' : '醜一'}？ 同意 ${agreeCount} / 反對 ${rejectCount}`;
+    const message = `投票更新: ${getVoteTopic(currentVote.type, displayName)}？ 同意 ${agreeCount} / 反對 ${rejectCount}`;
     await this.bot.respond(msg, message);
     
     // Check if vote should pass or fail
@@ -119,7 +147,7 @@ class VoteManager {
       await this.handleReject();
     } else if (currentVote.isComplete()) {
       // If we have 2 votes but not enough to pass or fail, determine based on vote type
-      if (voteType === false) {
+      if (agree === false) {
         await this.handleReject();
       } else {
         await this.handlePass();
@@ -135,17 +163,7 @@ class VoteManager {
     const currentRecord = await this.db.getUserRecord(currentVote.targetUser);
     await this.db.saveUserRecord(currentVote.targetUser, currentVote.type);
     
-    let message = `投票結束: ${displayName}`;
-    if (currentVote.type === 'bailan') {
-      message += "白爛 +1";
-    } else if (currentVote.type === 'warning') {
-      // Check if user already had one warning (which would make this the second)
-      if (currentRecord && currentRecord.warning_count === 1) {
-        message += "醜二，白爛 +1";
-      } else {
-        message += "醜一";
-      }
-    }
+    const message = "投票結束: " + getVotePassMessage(currentVote.type, displayName, currentRecord);
     
     await this.bot.sendMessage(chatId, message);
     this.delete();
@@ -158,7 +176,8 @@ class VoteManager {
     const chatId = currentVote.chatId;
     const displayName = nicknameOf(currentVote.targetUser);
     
-    const message = `投票結束： ${displayName}不算${currentVote.type === 'bailan' ? '白爛' : '醜一'}`;
+
+    const message = "投票結束：" + getVoteFailMessage(currentVote.type, displayName);
     await this.bot.sendMessage(chatId, message);
     this.delete();
   }
@@ -194,8 +213,7 @@ class VoteManager {
     
     // Send confirmation message
     const displayName = nicknameOf(target);
-    const voteTypeText = voteType === 'bailan' ? '白爛' : '醜一';
-    const message = `開始投票: ${displayName} 484 ${voteTypeText}？`;
+    const message = `開始投票: ${getVoteTopic(voteType, displayName)}？`;
     
     await this.bot.respond(msg, message, { deleteCommand: deleteAfter });
   }
@@ -213,7 +231,6 @@ class VoteManager {
     if (!repliedToMessage) return;
     
     let found = null
-    // Check if the message matches the voting patterns
     const bailan = null;
     if (userMessage.includes('白爛') ) {
       found = 'bailan';
@@ -241,8 +258,7 @@ class VoteManager {
     const rejectCount = currentVote.getRejectCount();
     const hoursLeft = currentVote.getTimeRemaining();
     
-    let voteType = currentVote.type === 'bailan' ? '白爛' : '醜一';
-    const message = `${displayName} 484 ${voteType}？ 同意 ${agreeCount} / 反對 ${rejectCount} \n剩餘時間: ${hoursLeft.toFixed(1)} 小時`;
+    const message = `${getVoteTopic(currentVote.type, displayName)}？ 同意 ${agreeCount} / 反對 ${rejectCount} \n剩餘時間: ${hoursLeft.toFixed(1)} 小時`;
     
     await this.bot.respond(msg, message);
   }

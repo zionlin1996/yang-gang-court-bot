@@ -50,6 +50,7 @@ bot.handleCommand("/records", async (msg) => {
 
 bot.handleCommand("/vote", (msg) => voteManager.handleNewVote(msg, 'bailan'));
 bot.handleCommand("/warn", (msg) => voteManager.handleNewVote(msg, 'warning'));
+bot.handleCommand("/pardon", (msg) => voteManager.handleNewVote(msg, 'pardon'));
 bot.handleCommand("/agree", (msg) => voteManager.handleVote(msg, true));
 bot.handleCommand("/reject", (msg) => voteManager.handleVote(msg, false));
 bot.handleCommand("/status", (msg) => voteManager.getStatus(msg));

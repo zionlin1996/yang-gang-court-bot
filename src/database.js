@@ -63,9 +63,23 @@ class Database {
               },
             });
           }
+        } else if (type === 'pardon') {
+          // Decrease bailan count by 1, but not below 0
+          const newBailanCount = Math.max(0, existingUser.bailanCount - 1);
+          await this.prisma.userRecord.update({
+            where: { userId },
+            data: {
+              bailanCount: newBailanCount,
+            },
+          });
         }
       } else {
-        // Create new user
+        // Create new user (pardon doesn't create new users)
+        if (type === 'pardon') {
+          // If user doesn't exist and we're pardoning, do nothing
+          return;
+        }
+        
         const bailanCount = type === 'bailan' ? 1 : 0;
         const warningCount = type === 'warning' ? 1 : 0;
         

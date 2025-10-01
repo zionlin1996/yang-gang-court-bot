@@ -11,6 +11,7 @@ const HELP_MESSAGE = `
 • /records <username> - 顯示白爛紀錄。如果沒有指定用戶，顯示所有人的紀錄
 • /vote <username> - 投票是否白爛 (發起人自動同意，需要1票同意)
 • /warn <username> - 投票是否醜一 (發起人自動同意，需要1票同意)。如果醜二，視為白爛一次
+• /pardon <username> - 投票是否赦免 (發起人自動同意，需要1票同意)。成功後白爛 -1
 • /agree - 同意目前投票
 • /reject - 反對目前投票
 • /status - 顯示目前投票狀態
