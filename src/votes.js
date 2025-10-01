@@ -231,8 +231,7 @@ class VoteManager {
     if (!repliedToMessage) return;
     
     let found = null
-    const bailan = null;
-    if (userMessage.includes('白爛') ) {
+    if (userMessage.includes('白爛+1') ) {
       found = 'bailan';
     } else if (userMessage.includes('醜一')) {
       found = 'warning';
