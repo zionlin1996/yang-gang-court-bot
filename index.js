@@ -13,6 +13,22 @@ require('dotenv').config();
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new EnhancedBot(token, { mode: process.env.NODE_ENV });
 
+bot.setMyCommands([
+  { command: 'help', description: '顯示說明' },
+  { command: 'rules', description: '顯示裁決規則' },
+  { command: 'records', description: '查詢紀錄，可加 @使用者' },
+  { command: 'vote', description: '對某人發起「白爛」投票（加 @使用者）' },
+  { command: 'warn', description: '對某人發起「醜一」投票（加 @使用者）' },
+  { command: 'pardon', description: '對某人發起「赦免」投票（加 @使用者）' },
+  { command: 'agree', description: '同意目前進行中的投票' },
+  { command: 'reject', description: '反對目前進行中的投票' },
+  { command: 'status', description: '查看目前投票狀態' }
+], { scope: { type: 'all_group_chats' } })
+.catch((err) => {
+  console.warn('Failed to register group commands:', err?.message || err);
+});
+
+
 // Bot commands
 bot.handleCommand("/help", async (msg) => bot.respond(msg, HELP_MESSAGE));
 bot.handleCommand("/rules", async (msg) => bot.respond(msg, RULES_MESSAGE));

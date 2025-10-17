@@ -1,5 +1,6 @@
 function parseMessage(msg) {
-  const command = msg.text.split(' ')[0];
+  const commandToken = msg.text.split(' ')[0];
+  const [command] = commandToken.split('@');
   const args = msg.text.split(' ').slice(1);
   const chatId = msg.chat.id;
   const id = msg.message_id;

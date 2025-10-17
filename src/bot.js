@@ -33,9 +33,18 @@ class EnhancedBot extends TelegramBot {
       
       // Handle commands (messages starting with /)
       if (msg.text.startsWith('/')) {
-        const command = msg.text.split(' ')[0];
-        if (this.handlers[command]) {
-          return this.handlers[command](msg);
+        const commandToken = msg.text.split(' ')[0];
+        const [base, mention] = commandToken.split('@');
+        const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'yang_gang_court_bot';
+
+        // If there is a mention, only handle if it's for this bot
+        if (mention && mention !== botUsername) {
+          return; // Mentioned a different bot, ignore
+        }
+
+        const normalized = base;
+        if (this.handlers[normalized]) {
+          return this.handlers[normalized](msg);
         }
         return; // Unknown command, ignore
       }
